@@ -1,0 +1,32 @@
+from data.steps import get_steps_data_and_convert_to_df
+from data.sleep import get_sleep_data_and_convert_to_df
+from data.heart_rate import get_heart_rate_data_and_convert_to_df
+from data.activity_level_calories import get_activity_level_calories_data_and_convert_to_df
+
+from models.xgboost import xgboost
+from models.random_forest import random_forest
+from models.gradient_boost import gradient_boost
+from models.voting_classifier import voting_classifier
+from preprocessing.preprocessor import preprocessor_sleep_wake_detection, split_train_test_set, oversampling_with_smote
+
+if __name__ == '__main__':
+    # fetch_steps_data_from_api()
+    # fetch_heart_rate_data_from_api()
+    # fetch_activity_level_calories_data_from_api()
+    # fetch_oxygen_saturation_level_data_from_api()
+    # expand_oxygen_saturation_data_from_mongo()
+
+    steps_df = get_steps_data_and_convert_to_df()
+    sleep_df = get_sleep_data_and_convert_to_df()
+    heart_rate_df = get_heart_rate_data_and_convert_to_df()
+    activity_level_calories_df = get_activity_level_calories_data_and_convert_to_df()
+
+    X, y_encoded, label_encoder_classes = preprocessor_sleep_wake_detection(steps_df, heart_rate_df, activity_level_calories_df, sleep_df)
+
+    X_resampled, y_resampled = oversampling_with_smote(X, y_encoded)
+
+    X_train, X_test, y_train, y_test = split_train_test_set(X_resampled, y_resampled)
+
+    random_forest(X_train, X_test, y_train, y_test, label_encoder_classes)
+    gradient_boost(X_train, X_test, y_train, y_test, label_encoder_classes)
+    voting_classifier(X_train, X_test, y_train, y_test, label_encoder_classes)
